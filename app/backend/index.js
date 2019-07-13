@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const router = require("./routes/routes");
 const Slackbot = require("slackbots");
-
+const commandMap = require("./commands");
 //use cors to allow cross origin resource sharing
 app.use(cors({ origin: "http://localhost:3000", credentials: false }));
 
@@ -34,8 +34,11 @@ console.log("Server Listening on port 3001");
 
 ///slack bot code
 
+function errorMessage() {
+  return "Please enter a valid command! type 'help' to start ";
+}
 const bot = new Slackbot({
-  token: "xoxb-681011609554-694278002823-YmvjN3DzO3MR4tlnZiPJUk0N",
+  token: "",
   name: "internhack"
 });
 
@@ -46,21 +49,53 @@ bot.on("start", function() {
   };
 
   // define existing username instead of 'user_name'
-  bot.postMessageToChannel("general", "Hey!how are you guys doing !", params);
+  bot.postMessageToChannel("general", "Hey! I am the ML hackBot", params);
 });
-
 bot.on("error", err => {
   console.log(err);
 });
+let predictNext = false;
 bot.on("message", async data => {
   if (data.type != "message" || !data.client_msg_id) {
     return;
   }
-  console.log(data);
   var params = {
     icon_emoji: ":sunglasses:"
   };
   let user = await bot.getUserById(data.user);
-  console.log(user.name);
-  bot.postMessageToUser(user.name, `Hey man 'ssup! your message was : ${data.text}`, params);
+  let currentCommand = "";
+  if (data.text.indexOf("hi ") >= 0) {
+    currentCommand = commandMap["hi"];
+  } else if (data.text.indexOf("select model") >= 0) {
+    let name = data.text.split("select model");
+    name = name[name.length - 1];
+    currentCommand = commandMap["select model"];
+    bot.postMessageToUser(user.name, currentCommand(name.trim()), params);
+    return;
+  } else {
+    console.log('predictNext');
+    console.log(predictNext);
+    if (predictNext) {
+      predictNext = !predictNext;
+      currentCommand = commandMap["predictExec"];
+      bot.postMessageToUser(
+        user.name,
+        currentCommand(data.text, user.name),
+        params
+      );
+      return;
+    }
+    if (data.text == "predict") {
+      predictNext = true;
+    }
+    console.log('data.text');
+    console.log(data.text);
+    console.log(predictNext);
+    currentCommand = commandMap[data.text];
+  }
+  if (currentCommand) {
+    bot.postMessageToUser(user.name, currentCommand(user.name), params);
+  } else {
+    bot.postMessageToUser(user.name, errorMessage(), params);
+  }
 });

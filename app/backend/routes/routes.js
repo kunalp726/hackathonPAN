@@ -1,6 +1,6 @@
-let mongoose = require("mongoose");
-mongoose.Promise = global.Promise;
-// var mongoDB = '';
+// let mongoose = require("mongoose");
+// mongoose.Promise = global.Promise;
+// var mongoDB = 'mongodb://localhost:27017/hackathon';
 // mongoose.connect(mongoDB, { useNewUrlParser: true });
 // var {userModel}=require("../models/models");
 

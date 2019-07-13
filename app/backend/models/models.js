@@ -4,9 +4,23 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
-  email: String,
-  password: String,
   name:String,
+  key:[{
+    date:String,
+    session:[{
+      startTime:String,
+      endTime:String,
+      queries:[{
+        result:[{
+          label:String,
+          propbability:Number
+        }],
+        modelUrl:String,
+        cometUrl:String,
+        query:String
+      }]
+    }]
+  }]
 });
 
 var userModel = mongoose.model('users', userSchema );
